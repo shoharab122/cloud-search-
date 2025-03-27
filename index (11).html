@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cloud Search</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #202124;
+            --header-bg: #ffffff;
+            --input-bg: rgba(255,255,255,0.9);
+            --border-color: #dfe1e5;
+            --primary-color: #1a73e8;
+            --news-bg: rgba(255,255,255,0.9);
+        }
+
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #e8eaed;
+            --header-bg: #2d2d2d;
+            --input-bg: rgba(45,45,45,0.9);
+            --border-color: #5f6368;
+            --primary-color: #8ab4f8;
+            --news-bg: rgba(45,45,45,0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        /* Welcome Animation */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a73e8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: welcomeFade 2s forwards;
+        }
+
+        @keyframes welcomeFade {
+            0% { opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 2rem;
+            text-align: center;
+            transform: translateY(-20px);
+            opacity: 0;
+            animation: textSlide 1s ease-out forwards 0.3s;
+        }
+
+        @keyframes textSlide {
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Cloud Animations */
+        .clouds {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50px;
+            animation: float linear infinite;
+            opacity: 0.9;
+            display: none; /* Hidden on mobile by default */
+        }
+
+        .dark-mode .cloud {
+            background: rgba(45,45,45,0.9);
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(110%); }
+        }
+
+        /* Main Content */
+        .main-container {
+            opacity: 0;
+            animation: mainFadeIn 0.5s ease-out forwards 2s;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes mainFadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem;
+            background: var(--header-bg);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        /* Search Container */
+        .search-container {
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 95%;
+        }
+
+        .search-box {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Search Buttons */
+        .search-buttons {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .search-button {
+            padding: 0.8rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* News Feed */
+        .news-feed {
+            margin: 1.5rem auto;
+            padding: 1rem;
+            width: 95%;
+            background: var(--news-bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .news-article {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+
+        .news-title {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .news-source {
+            color: #80868b;
+            font-size: 0.75rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile Optimizations */
+        @media (min-width: 768px) {
+            .cloud { display: block; }
+            .welcome-text { font-size: 3rem; }
+            .search-input { padding: 1rem 2rem; }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-text { font-size: 1.8rem; }
+            .search-input { font-size: 0.95rem; }
+            .news-feed { margin: 1rem 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen">
+        <h1 class="welcome-text">Cloud Search</h1>
+        <p class="welcome-text" style="font-size: 1.1rem; animation-delay: 0.5s;">Your Smart Search Companion</p>
+    </div>
+
+    <!-- Cloud Animations -->
+    <div class="clouds">
+        <div class="cloud small" style="top: 15%; animation-duration: 50s;"></div>
+        <div class="cloud medium" style="top: 35%; animation-duration: 60s;"></div>
+        <div class="cloud large" style="top: 55%; animation-duration: 70s;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <header class="header">
+            <h1>☁️ Cloud Search</h1>
+        </header>
+
+        <main class="search-container">
+            <div class="search-box">
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Search the web..."
+                       id="searchInput"
+                       autofocus
+                       aria-label="Search input">
+                
+                <div class="search-buttons">
+                    <button class="search-button" onclick="search('google')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path fill="#ffffff" d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/>
+                        </svg>
+                    </button>
+                    <button class="search-button" onclick="search('bing')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path fill="#ffffff" d="M5.71 3L3.15 5.56l6.88 6.88L5 17.59l2.41 2.41 5.15-5.15 6.88 6.88L21 18.29V3H5.71zM17.29 5H19v13.29l-1.27-1.27-4.02-4.02-1.69-1.69-6.88-6.88L5.71 5h11.58z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- News Feed -->
+            <div class="news-feed" id="newsFeed">
+                <h3>Latest News</h3>
+                <div id="newsArticles">Loading...</div>
+            </div>
+        </main>
+    </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+
+    <script>
+        // Search Functionality
+        function search(engine) {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            
+            const encodedQuery = encodeURIComponent(query);
+            const searchURL = engine === 'bing' ?
+                `https://www.bing.com/search?q=${encodedQuery}` :
+                `https://www.google.com/search?q=${encodedQuery}`;
+            
+            window.location.href = searchURL;
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', 
+                document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+            );
+        }
+
+        // News Loader
+        
+async function loadNews() {
+    const rssUrl = 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
+
+    try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+        const data = await response.json();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+        const items = xmlDoc.querySelectorAll("item");
+        const container = document.getElementById('newsArticles');
+        container.innerHTML = '';
+
+        items.forEach((item, index) => {
+            if (index >= 5) return; // Show only 5 articles
+
+            const title = item.querySelector("title").textContent;
+            const link = item.querySelector("link").textContent;
+            const source = item.querySelector("source")?.textContent || "Google News";
+
+            container.innerHTML += `
+                <div class="news-article">
+                    <a href="${link}" class="news-title" target="_blank">${title}</a>
+                    <div class="news-source">${source}</div>
+                </div>
+            `;
+        });
+    } catch (error) {
+        document.getElementById('newsArticles').innerHTML = '<div class="news-article">News unavailable</div>';
+    }
+}
+
+// Load news on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadNews();
+});
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load theme
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Load news
+            loadNews();
+            
+            // Enter key support
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') search('google');
+            });
+        });
+    </script>
+</body>
+</html>
